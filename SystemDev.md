@@ -495,3 +495,6 @@ React 18 + TypeScript + Vite + Tailwind
 NestJS + TypeScript + Prisma
 PostgreSQL + Redis
 Docker + GitHub Actions
+
+---
+
