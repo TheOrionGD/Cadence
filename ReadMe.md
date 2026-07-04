@@ -643,6 +643,11 @@ MIT License
 
 ---
 
-### 🌟 Collaboration & Contributions
+### 🌟 Collaboration & External Projects
 
-We are actively collaborating on new enhancements and features. If you are interested in working with us or contributing to the platform, we'd love to have you on board! Feel free to open an issue, start a discussion, or submit a pull request.
+While the Cadence platform is fully designed and maintained by our core team, we are highly open to external collaborations!
+
+If you have a separate project, system, or GitHub repository and would like to collaborate with **Team Cadence** as a whole, or partner with a **particular team member** (based on their specific expertise in architecture, frontend, backend, or DevSecOps), you are very welcome to reach out:
+
+* **Whole Team Collaboration**: Open a GitHub issue or start a repository discussion to propose your project idea or request team collaboration.
+* **Individual Collaboration**: Reaching out to specific team members is as simple as initiating standard GitHub communication channels—such as mentioning them on relevant threads, opening issues on their target repos, or checking their GitHub profiles for direct contact information.
