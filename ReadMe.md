@@ -633,21 +633,33 @@ To validate the assignment logic, Santosh configures unit and integration test s
 
 ## License
 
-MIT License
+This project is open-source and licensed under the **MIT License** — see the [LICENSE](LICENSE) file for details.
 
 ---
 
-### Authors
+## Authors
 
-**Team Cadence**
+**[Team Cadence](https://github.com/TheOrionGD)**
 
 ---
 
-### 🌟 Collaboration & External Projects
+### 🌟 Collaborate with Team Cadence
 
-While the Cadence platform is fully designed and maintained by our core team, we are highly open to external collaborations!
+Cadence is a team of developers focused on building practical, impactful software through collaboration and thoughtful engineering.
 
-If you have a separate project, system, or GitHub repository and would like to collaborate with **Team Cadence** as a whole, or partner with a **particular team member** (based on their specific expertise in architecture, frontend, backend, or DevSecOps), you are very welcome to reach out:
+If you're shaping a product, contributing to open source, building for a hackathon, or exploring a personal system, we'd be glad to connect with fellow builders who enjoy turning ideas into something meaningful.
 
-* **Whole Team Collaboration**: Open a GitHub issue or start a repository discussion to propose your project idea or request team collaboration.
-* **Individual Collaboration**: Reaching out to specific team members is as simple as initiating standard GitHub communication channels—such as mentioning them on relevant threads, opening issues on their target repos, or checking their GitHub profiles for direct contact information.
+### 🤝 Collaborate with the Entire Team
+
+If your project needs support across design, frontend, backend, AI, security, or deployment, we'd be happy to explore it. You can reach out through a GitHub Issue or Discussion.
+
+### 👨‍💻 Work with Individual Team Members
+
+If you need help in a specific area, you can contact the most relevant team member directly through their GitHub profile or repository discussions.
+
+### 🚀 Open Source, Learning & Mentorship
+
+We also welcome students, beginners, and open-source contributors looking for guidance, feedback, or mentorship.
+
+> **Innovate. Build. Impact.**
+> If you're building something meaningful, we'd love to collaborate.
