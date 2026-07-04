@@ -26,6 +26,7 @@ Cadence is a production-grade, multi-tenant SaaS application that enables teams 
 * Testing
 * Deployment
 * Future Enhancements
+* Development Team & Roles
 * License
 
 ---
@@ -468,7 +469,7 @@ In most team-based projects (especially academic/college teams), work splits une
 ### Clone Repository
 
 ```bash
-git clone https://github.com/your-username/cadence.git
+git clone https://github.com/TheOrionGD/cadence.git
 cd cadence
 ```
 
@@ -558,6 +559,57 @@ Supported platforms:
 
 ---
 
+## Development Team & Roles
+
+To ensure balanced workloads and avoid single-person development silos, the Cadence team operates on a **cross-functional, collaborative model**. Responsibilities are shared across complementary skill sets so that no single component (like the frontend portal or the database) is built in isolation.
+
+### Cross-Functional Collaboration Matrix
+
+| Functional Area | Primary Lead | Co-Developers / Collaborators |
+| :--- | :--- | :--- |
+| **System Architecture & AI Integration** | Godfrey | Vijesh (DB Sync), Santosh (Sandboxing) |
+| **Frontend UI/UX & State Management** | Yuvaraj | Godfrey (RSC & APIs), Santosh (E2E Testing) |
+| **Backend APIs & Ingestion Engines** | Vijesh | Godfrey (tRPC/Zod), Santosh (Middleware & Security) |
+| **DevOps, Security, & Testing** | Santosh | All Members (Unit & E2E Testing, Security Reviews) |
+
+---
+
+### Team Members & Focus Areas
+
+* **Godfrey** — **Lead Full-Stack Architect**
+  * **Focus**: Full-Stack System Design, tRPC API Integration, and AI Orchestration.
+  * **Collaborative Responsibilities**:
+    * Co-develops Next.js 16 frontend architecture and Server Components with **Yuvaraj** to ensure seamless data flows and state synchronization.
+    * Designs core API boundaries (tRPC/REST) and Zod schema validations.
+    * Coordinates with **Vijesh** on database design, caching patterns (Redis), and vector embeddings (pgvector).
+    * Assists **Santosh** with designing security middleware, containerization (Docker), and sandbox code execution environments.
+
+* **Yuvaraj** — **Frontend UI/UX & Interaction Engineer**
+  * **Focus**: UI Components, Interactive Portals, and Real-Time State Management.
+  * **Collaborative Responsibilities**:
+    * Leads the design and implementation of responsive user interfaces, Gantt/Kanban charts, and collaboration panels.
+    * Collaborates with **Godfrey** on integrating streaming SSR, Server Actions, and frontend state synchronization (TanStack Query).
+    * Integrates WebSocket real-time channels and frontend Clerk/Auth.js flows.
+    * Works with **Santosh** to write and maintain automated E2E tests (Playwright) to ensure frontend reliability.
+
+* **Vijesh** — **Backend & Database Engineer**
+  * **Focus**: PostgreSQL Schema Architecture, Data Ingestion Pipelines, and Cache Optimization.
+  * **Collaborative Responsibilities**:
+    * Designs and optimizes database tables, migrations (Prisma/Drizzle ORM), and pgvector similarity queries.
+    * Co-develops the CSV/Excel file parser and auto-assignment engine alongside **Godfrey** (AI triage rules) and **Santosh** (worker limits).
+    * Integrates Redis caching layer to minimize database load on critical endpoints.
+    * Implements Postgres Row-Level Security (RLS) policies and database access control checks in cooperation with **Santosh**.
+
+* **Santosh** — **DevSecOps & QA Lead**
+  * **Focus**: Cloud Infrastructure, Application Security, CI/CD, and Automated Testing.
+  * **Collaborative Responsibilities**:
+    * Provisions and maintains deployment environments (Vercel, AWS, Docker, Nginx) and CI/CD workflows (GitHub Actions).
+    * Leads application security auditing, input sanitization, and isolated execution sandbox design for code validation.
+    * Standardizes testing frameworks (Vitest/Bun test runners) and partners with **Yuvaraj** on frontend test coverage.
+    * Collaborates with **Vijesh** on database access security, server-side rate-limiting, and error telemetry (Sentry).
+
+---
+
 ## License
 
 MIT License
@@ -567,4 +619,3 @@ MIT License
 ### Author
 
 **TheOrionGD**
-Full-Stack Developer
