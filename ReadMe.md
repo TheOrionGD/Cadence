@@ -637,6 +637,12 @@ MIT License
 
 ---
 
-### Author
+### Authors
 
-**TheOrionGD**
+**Team Cadence**
+
+---
+
+### 🌟 Collaboration & Contributions
+
+We are actively collaborating on new enhancements and features. If you are interested in working with us or contributing to the platform, we'd love to have you on board! Feel free to open an issue, start a discussion, or submit a pull request.
