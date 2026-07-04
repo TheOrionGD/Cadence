@@ -8,27 +8,27 @@ Cadence is a production-grade, multi-tenant SaaS application that enables teams 
 
 ## Table of Contents
 
-* Overview
-* Features
-* User Roles
-* Tech Stack
-* System Architecture
-* Database Design
-* API Design
-* AI Layer
-* Autonomous Work Orchestration (Premium)
-* Code Sandbox & Test Runner (Premium)
-* Subscription Tiers
-* Security
-* Installation & Setup
-* Environment Variables
-* Running the Application
-* Testing
-* Deployment
-* Future Enhancements
-* Development Team & Roles
-* Developer Story
-* License
+* [Overview](#overview)
+* [Features](#features)
+* [User Roles](#user-roles)
+* [Tech Stack](#tech-stack)
+* [System Architecture](#system-architecture)
+* [Database Design](#database-design-core-tables)
+* [API Design](#api-design)
+* [AI Layer](#ai-layer)
+* [Autonomous Work Orchestration (Premium)](#autonomous-work-orchestration-premium--enterprise-exclusive)
+* [Code Sandbox & Test Runner (Premium)](#in-platform-code-sandbox--test-runner-premium-exclusive)
+* [Subscription Tiers](#subscription-tiers)
+* [Security](#security)
+* [Installation & Setup](#installation--setup)
+* [Environment Variables](#environment-variables)
+* [Running the Application](#running-the-application)
+* [Testing](#testing)
+* [Deployment](#deployment)
+* [Future Enhancements](#future-enhancements)
+* [Development Team & Roles](#development-team--roles)
+* [Developer Story](#developer-story)
+* [License](#license)
 
 ---
 
@@ -613,52 +613,21 @@ To ensure balanced workloads and avoid single-person development silos, the Cade
 
 ## Developer Story
 
-To provide a clear roadmap of code ownership and implementation paths across the Cadence codebase, the development is divided into distinct, collaborative tracks for frontend and backend files:
+To see how the team collaborates in practice, let's trace the journey of building a new feature—like the **Skill-Based Auto Task Assignment** engine—as it flows through the codebase. This is a story of how our team's cross-functional roles work together to bring Cadence to life.
 
-### 1. Frontend Development Track (Next.js 16, React 19, TypeScript)
+### Act I: The Architectural Blueprint & Intelligent Backbone
+The journey begins with **Godfrey (Lead Full-Stack Architect)**. He sits down to design the overall system topology and outline how the backend services communicate. He sets up the type-safe tRPC routers and designs the Zod request/response validation schemas. Since this feature requires intelligent triage, Godfrey constructs the multi-step agent workflows using the **Google Agent Development Kit (ADK)** and sets up model-routing logic to delegate heavy parsing tasks to Gemini and fast classifications to Groq.
 
-* **Yuvaraj** — **Primary UI/UX Developer**
-  * **Ownership**: Visual layouts, component libraries, and interactive portal views.
-  * **Code Focus**:
-    * Interactive portal dashboards, Gantt charts, Kanban boards, and calendar views.
-    * Client-side state-management hook files and context providers.
-    * Real-time client-side sync via Socket.IO/WebSockets.
-    * Playwright E2E visual and interaction testing suites.
+### Act II: The Relational Foundation & Data Ingestion
+With the blueprints ready, Godfrey hands the design off to **Vijesh (Backend & Database Engineer)** to build the database engine. Vijesh designs the PostgreSQL database schema, adding the new `skill_profiles` and `file_work_units` tables, and runs migrations via Prisma/Drizzle ORM. He then writes the core ingestion pipelines to parse Excel/CSV uploads and caches the live worker capacities in Redis. Vijesh coordinates with Godfrey to align these schema structures with tRPC and sets up pgvector tables to handle similarity matches.
 
-* **Godfrey** — **Full-Stack Integrator & Page Architect**
-  * **Ownership**: App Router pages, Server Actions, and data hydration boundaries.
-  * **Code Focus**:
-    * Next.js 16 App Router page routing, layout wrappers, and Next.js Server Components.
-    * Server Actions and streaming SSR setups.
-    * Data hydration and validation interfaces bridging UI state with backend APIs.
+### Act III: The Interactive Interface & User Experience
+As the backend logic and database schemas take shape, **Yuvaraj (Frontend Developer)** takes the lead on the user interface. He crafts the interactive team dashboard, real-time file-processing progress bars, and the Kanban/timeline views using Next.js 16 (App Router), Tailwind CSS v4, and shadcn/ui. 
+To bring the interface to life, Yuvaraj partners with **Godfrey** to hook up Next.js Server Components and Server Actions, streaming live data to the UI. Yuvaraj sets up client state management via TanStack Query and implements real-time updates using WebSockets/Socket.IO so that managers see task status updates instantaneously.
 
----
-
-### 2. Backend Development Track (tRPC, NestJS/Hono, PostgreSQL, Bun)
-
-* **Vijesh** — **Primary Database & Engine Developer**
-  * **Ownership**: DB schema architecture, parsing engines, and cache performance.
-  * **Code Focus**:
-    * PostgreSQL table definitions, schema files, and migration scripts (Prisma/Drizzle ORM).
-    * `pgvector` similarity queries and vector embedding tables for AI features.
-    * Ingestion pipelines (CSV/Excel parsing logic and raw data chunking scripts).
-    * Redis session storage configurations and endpoint caching layers.
-
-* **Santosh** — **DevSecOps, Security & QA Developer**
-  * **Ownership**: Security middleware, rate limiting, containerization, and test runners.
-  * **Code Focus**:
-    * Backend security middleware (JWT auth, Clerk session check handlers, and RBAC rules).
-    * Zod request-validation schema files.
-    * Sandboxed execution runners for the in-platform test suite.
-    * Automated API and unit testing suites (Vitest/Bun test runners).
-    * Cloud deployment setups (AWS, Vercel, Railway, Docker configurations) and Sentry/OpenTelemetry monitoring logs.
-
-* **Godfrey** — **Lead API & AI Architect**
-  * **Ownership**: Core API orchestration, tRPC routers, and multi-model routing.
-  * **Code Focus**:
-    * tRPC endpoint declarations and NestJS/Hono router files.
-    * Google Agent Development Kit (ADK) workflow agent files (Triage, Reassignment, Reporting).
-    * Multi-model inference routing logic (Claude/Gemini/Groq integration handlers).
+### Act IV: Hardening the Core, QA, and Launch
+Before any code goes live, **Santosh (DevSecOps & QA Lead)** enters the picture to secure and deploy the code. He reviews the backend endpoints, configuring JWT session checks, Clerk auth strategies, and PostgreSQL Row-Level Security (RLS) policies to keep workspace data strictly isolated. 
+To validate the assignment logic, Santosh configures unit and integration test suites using Vitest and Bun, while working with Yuvaraj to run Playwright E2E browser tests on the dashboard. He isolates the platform's in-browser execution sandbox inside ephemeral Docker containers. Finally, Santosh pushes the code through CI/CD pipelines (GitHub Actions) to Vercel and AWS, setting up Sentry and OpenTelemetry so the team has full observability over the system.
 
 ---
 
