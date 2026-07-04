@@ -27,6 +27,7 @@ Cadence is a production-grade, multi-tenant SaaS application that enables teams 
 * Deployment
 * Future Enhancements
 * Development Team & Roles
+* Developer Story
 * License
 
 ---
@@ -607,6 +608,57 @@ To ensure balanced workloads and avoid single-person development silos, the Cade
     * Leads application security auditing, input sanitization, and isolated execution sandbox design for code validation.
     * Standardizes testing frameworks (Vitest/Bun test runners) and partners with **Yuvaraj** on frontend test coverage.
     * Collaborates with **Vijesh** on database access security, server-side rate-limiting, and error telemetry (Sentry).
+
+---
+
+## Developer Story
+
+To provide a clear roadmap of code ownership and implementation paths across the Cadence codebase, the development is divided into distinct, collaborative tracks for frontend and backend files:
+
+### 1. Frontend Development Track (Next.js 16, React 19, TypeScript)
+
+* **Yuvaraj** — **Primary UI/UX Developer**
+  * **Ownership**: Visual layouts, component libraries, and interactive portal views.
+  * **Code Focus**:
+    * Interactive portal dashboards, Gantt charts, Kanban boards, and calendar views.
+    * Client-side state-management hook files and context providers.
+    * Real-time client-side sync via Socket.IO/WebSockets.
+    * Playwright E2E visual and interaction testing suites.
+
+* **Godfrey** — **Full-Stack Integrator & Page Architect**
+  * **Ownership**: App Router pages, Server Actions, and data hydration boundaries.
+  * **Code Focus**:
+    * Next.js 16 App Router page routing, layout wrappers, and Next.js Server Components.
+    * Server Actions and streaming SSR setups.
+    * Data hydration and validation interfaces bridging UI state with backend APIs.
+
+---
+
+### 2. Backend Development Track (tRPC, NestJS/Hono, PostgreSQL, Bun)
+
+* **Vijesh** — **Primary Database & Engine Developer**
+  * **Ownership**: DB schema architecture, parsing engines, and cache performance.
+  * **Code Focus**:
+    * PostgreSQL table definitions, schema files, and migration scripts (Prisma/Drizzle ORM).
+    * `pgvector` similarity queries and vector embedding tables for AI features.
+    * Ingestion pipelines (CSV/Excel parsing logic and raw data chunking scripts).
+    * Redis session storage configurations and endpoint caching layers.
+
+* **Santosh** — **DevSecOps, Security & QA Developer**
+  * **Ownership**: Security middleware, rate limiting, containerization, and test runners.
+  * **Code Focus**:
+    * Backend security middleware (JWT auth, Clerk session check handlers, and RBAC rules).
+    * Zod request-validation schema files.
+    * Sandboxed execution runners for the in-platform test suite.
+    * Automated API and unit testing suites (Vitest/Bun test runners).
+    * Cloud deployment setups (AWS, Vercel, Railway, Docker configurations) and Sentry/OpenTelemetry monitoring logs.
+
+* **Godfrey** — **Lead API & AI Architect**
+  * **Ownership**: Core API orchestration, tRPC routers, and multi-model routing.
+  * **Code Focus**:
+    * tRPC endpoint declarations and NestJS/Hono router files.
+    * Google Agent Development Kit (ADK) workflow agent files (Triage, Reassignment, Reporting).
+    * Multi-model inference routing logic (Claude/Gemini/Groq integration handlers).
 
 ---
 
