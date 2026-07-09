@@ -2,7 +2,7 @@
 
 **Autonomous Work Orchestration Platform for Teams & Agencies**
 
-Cadence is a production-grade, multi-tenant SaaS application that enables teams to plan, track, and collaborate on projects efficiently. It demonstrates real-world full-stack engineering practices, scalable system design, AI-assisted workflows, and clean separation of concerns across frontend, backend, and infrastructure layers — built on a 2026-current, type-safe stack.
+Cadence is a production-grade, multi-tenant, open-source application that enables teams to plan, track, and collaborate on projects efficiently. It demonstrates real-world full-stack engineering practices, scalable system design, AI-assisted workflows, and clean separation of concerns across frontend, backend, and infrastructure layers — built on a 2026-current, type-safe stack.
 
 ---
 
@@ -34,7 +34,7 @@ Cadence is a production-grade, multi-tenant SaaS application that enables teams 
 
 ## Overview
 
-Cadence allows organizations to create isolated workspaces where teams can manage projects, assign tasks, collaborate in real time, and analyze productivity through dashboards — now enhanced with AI-assisted prioritization and insights. The platform follows a **multi-tenant SaaS architecture** with strict workspace-level data isolation, end-to-end type safety, and an AI integration layer built for the LLM era.
+Cadence allows organizations to create isolated workspaces where teams can manage projects, assign tasks, collaborate in real time, and analyze productivity through dashboards — now enhanced with AI-assisted prioritization and insights. The platform follows a **multi-tenant open-source architecture** with strict workspace-level data isolation, end-to-end type safety, and an AI integration layer built for the LLM era.
 
 ### Positioning
 
@@ -52,12 +52,12 @@ Where traditional tools like Asana or Monday.com help teams **manage tasks**, Ca
 * Project and task lifecycle management
 * Real-time collaboration and activity logs
 * AI-powered task prioritization, summarization, and insights
-* **Skill-Based Auto Task Assignment (Exclusive)** – intelligent distribution of file-based work (CSV/Excel) across a team based on each member's skill score
+* **Skill-Based Auto Task Assignment** – intelligent distribution of file-based work (CSV/Excel) across a team based on each member's skill score
 * **Agentic AI Workflows (Google ADK)** – autonomous, multi-step agents for task triage, reassignment, and file-processing orchestration
+* **Second-Brain Agent for GitHub Repos** – points at any repo (yours or public) and autonomously builds/maintains living documentation: reads commits, infers architecture decisions, flags when README/docs drift out of sync with code, and proposes doc PRs. Perceives code changes → reasons about what changed structurally → acts by drafting doc updates → learns which of its past suggestions you accepted/rejected to calibrate future ones.
 * **Agency Portfolio Mode** – cross-workspace dashboard for service providers managing multiple client organizations under one System Admin account
-* **In-Platform Code Sandbox & Test Runner (Premium, Exclusive)** – embedded terminal to run, test, and validate code submitted against a development task, with a 7-day free trial
+* **In-Platform Code Sandbox & Test Runner** – embedded terminal to run, test, and validate code submitted against a development task
 * Analytics and productivity dashboards
-* Subscription tiers and usage limits via Stripe
 * In-app & email/push notifications with per-user preference controls
 * Time tracking and timesheet exports per task/project
 * Gantt chart and dependency-aware timeline view
@@ -78,9 +78,9 @@ Where traditional tools like Asana or Monday.com help teams **manage tasks**, Ca
 | Role          | Permissions                                                                  |
 | ------------- | ----------------------------------------------------------------------------- |
 | Super Admin   | Cross-workspace platform administration, infrastructure & support access     |
-| System Admin  | Service-provider role; manages multiple client organizations on the agency's behalf (provisioning, portfolio oversight, billing relay) |
-| Owner         | Workspace administration, billing, member management                        |
-| Admin         | Workspace-level management delegated by Owner (no billing access)           |
+| System Admin  | Service-provider role; manages multiple client organizations on the agency's behalf (provisioning, portfolio oversight, and usage monitoring) |
+| Owner         | Workspace administration and member management                              |
+| Admin         | Workspace-level management delegated by Owner                                |
 | Manager       | Oversees specific projects/teams, assigns tasks, sets skill profiles         |
 | Member        | Create, update, and manage assigned tasks                                   |
 | Contributor   | External/freelance collaborator with scoped, time-limited project access    |
@@ -91,8 +91,8 @@ Where traditional tools like Asana or Monday.com help teams **manage tasks**, Ca
 ### Role Notes
 
 * **Super Admin** sits above workspace boundaries — used for platform support/operations, not assignable by Owners.
-* **System Admin** is the role for the service provider/agency running Cadence as a managed offering — e.g., a dev shop or consultancy that sets up and operates the platform on behalf of client organizations. They get a **cross-workspace portfolio view** across every client org they service (provisioning new client workspaces, monitoring health/usage, relaying billing), but cannot see internal task-level content inside a client's workspace unless explicitly granted Owner/Admin access within that workspace. This is distinct from Super Admin, which is internal platform/infrastructure access — System Admin is a customer-facing, service-delivery role.
-* **Admin** is a new delegated tier so Owners can hand off day-to-day workspace management without exposing billing/financial data.
+* **System Admin** is the role for the service provider/agency running Cadence as a managed offering — e.g., a dev shop or consultancy that sets up and operates the platform on behalf of client organizations. They get a **cross-workspace portfolio view** across every client org they service (provisioning new client workspaces, monitoring health/usage, and platform status), but cannot see internal task-level content inside a client's workspace unless explicitly granted Owner/Admin access within that workspace. This is distinct from Super Admin, which is internal platform/infrastructure access — System Admin is a customer-facing, service-delivery role.
+* **Admin** is a new delegated tier so Owners can hand off day-to-day workspace management without exposing workspace owner settings.
 * **Manager** is new and sits between Owner and Member — manages skill profiles, oversees the auto-assignment engine for their team, and runs project-level reporting, without full workspace admin rights.
 * **Contributor** is built for agencies/freelancers — access expires automatically at a configurable date or on project close.
 * **Client** is a lightweight external role for approvals/sign-off (e.g., approving a deliverable) without full Viewer-level visibility into internal discussions.
@@ -149,10 +149,6 @@ Where traditional tools like Asana or Monday.com help teams **manage tasks**, Ca
 * **Vercel** (frontend/edge) + **AWS** (heavy backend/AI workloads), or **Render/Railway** for simpler deployments
 * **Sentry / OpenTelemetry** – Error tracking and observability
 
-### Payments
-
-* **Stripe** – Subscription billing, metering, and customer portal
-
 ---
 
 ## System Architecture
@@ -186,7 +182,9 @@ PostgreSQL (Supabase/Neon) + Redis (cache) + pgvector (AI)
 * `tasks`
 * `comments`
 * `activity_logs`
-* `subscriptions`
+* `repository_connections` (links workspaces/projects to GitHub repositories)
+* `doc_sync_suggestions` (tracks proposed doc updates, source commits, file paths, status: draft/submitted/accepted/rejected, and user feedback text for calibration)
+* `doc_sync_metrics` (analytics on documentation sync health, drift status, and accuracy improvements)
 * `embeddings` (vector store for AI-powered search/insights)
 * `skill_profiles` (per-member skill scores by task category)
 * `file_work_units` (row/sheet-level task chunks parsed from uploaded CSV/Excel files)
@@ -235,6 +233,7 @@ POST   /api/v1/ai/prioritize
 | Task prioritization, nuanced summaries | Claude | Strongest reasoning quality |
 | Live chat assistant, real-time scoring during auto-assignment | Groq | Lowest latency, near-instant token throughput |
 | Large CSV/Excel ingestion & analysis, image/file understanding | Gemini | Large context window + native multimodal input |
+| Repository analysis & doc PR drafting | Gemini / Claude | Large context/history analysis (Gemini) + high-quality prose & structural reasoning (Claude) |
 
 ### Agentic AI Workflows (Google Agent Development Kit)
 
@@ -243,6 +242,7 @@ Cadence uses **Google ADK** to run autonomous, multi-step agents rather than sin
 * **Triage Agent** – continuously scans incoming file uploads and unassigned work units, decides priority order, and hands off to the Auto-Assignment engine without a human trigger.
 * **Reassignment Agent** – watches for completed work units, blocked tasks, or members going over capacity, and re-routes work in real time (the agentic backbone behind the Skill-Based Auto Task Assignment feature).
 * **Reporting Agent** – runs on a schedule (e.g., end-of-day) to compile and deliver project/portfolio summaries to Owners, Managers, and System Admins.
+* **Second-Brain Agent** – points at any repo (yours or public) and autonomously builds/maintains living documentation: reads commits, infers architecture decisions, flags when README/docs drift out of sync with code, and proposes doc PRs. Perceives code changes → reasons about what changed structurally → acts by drafting doc updates → learns which of its past suggestions you accepted/rejected to calibrate future ones.
 * Agents are composed as ADK tool-calling workflows, with Claude/Gemini/Groq plugged in underneath as the reasoning models depending on the task (see model routing table above) — ADK handles the orchestration/state/tool-execution layer, the LLMs handle the reasoning.
 * All agent actions are logged to the audit trail and are reversible by a Manager/Owner.
 
@@ -251,13 +251,13 @@ Cadence uses **Google ADK** to run autonomous, multi-step agents rather than sin
 Cadence can be deployed/sold as a **managed service** by an agency or consultancy. This mode is built around the new **System Admin** role:
 
 * A **System Admin** account is created at the service-provider level, sitting above individual client workspaces.
-* From a single **Portfolio Dashboard**, the System Admin can: provision new client workspaces, monitor usage/health/SLA metrics across all clients, relay/consolidate billing, and apply standardized templates/policies across client orgs.
+* From a single **Portfolio Dashboard**, the System Admin can: provision new client workspaces, monitor usage/health/SLA metrics across all clients, monitor platform resources, and apply standardized templates/policies across client orgs.
 * Each client workspace remains fully isolated — the System Admin's portfolio view shows aggregate metrics (status, activity, utilization) but not internal task/file content, unless the client explicitly grants elevated access for support purposes.
-* This positions Cadence not just as self-serve SaaS, but as a white-label-able platform that an agency can resell as "managed project operations" to its own client base.
+* This positions Cadence not just as a self-hosted tool, but as a white-label-able platform that an agency can operate on behalf of its own client base.
 
 ---
 
-## Skill-Based Auto Task Assignment (Exclusive Feature)
+## Skill-Based Auto Task Assignment
 
 This is Cadence's signature differentiator: a self-balancing task distribution engine built specifically for teams that work off CSV/Excel data sets (e.g., data cleanup, QA review, content tagging, claims processing). It removes manual task-handoff entirely.
 
@@ -300,9 +300,9 @@ To reinforce engagement and fair recognition, every member has a visible **Level
 
 ---
 
-## Autonomous Work Orchestration (Premium / Enterprise, Exclusive)
+## Autonomous Work Orchestration
 
-This is the evolution of the Skill-Based Auto Task Assignment engine from a one-time assignment system into a **continuous orchestration layer** — the system doesn't just split and hand off work once, it keeps watching the whole project and intervening automatically. These capabilities sit behind paid tiers since they run continuous background inference rather than on-demand calls.
+This is the evolution of the Skill-Based Auto Task Assignment engine from a one-time assignment system into a **continuous orchestration layer** — the system doesn't just split and hand off work once, it keeps watching the whole project and intervening automatically.
 
 ### Continuous Reallocation
 
@@ -342,7 +342,7 @@ Beyond a generic "health score," this surfaces efficiency %, idle time %, skill 
 
 ### Multi-Agent AI Workforce
 
-Instead of one general-purpose AI layer, specialized agents handle distinct responsibilities and communicate internally: Task Routing Agent, Quality Review Agent, Workload Balancer, Deadline Predictor, Analytics Agent, Billing Agent, and Workspace Health Agent. (Built on Google ADK — see AI Layer.)
+Instead of one general-purpose AI layer, specialized agents handle distinct responsibilities and communicate internally: Task Routing Agent, Quality Review Agent, Workload Balancer, Deadline Predictor, Analytics Agent, Second-Brain Doc-Sync Agent, and Workspace Health Agent. (Built on Google ADK — see AI Layer.)
 
 ### Natural Language Operations
 
@@ -354,7 +354,7 @@ After observing real team workflows, the system generates a written SOP, an onbo
 
 ### Internal Talent Marketplace
 
-For agencies running multiple client workspaces: when one client has surplus work, the system recommends pulling available, high-quality reviewers from another underutilized client workspace, with an estimated cost — turning idle capacity into usable capacity across the portfolio.
+For agencies running multiple client workspaces: when one client has surplus work, the system recommends pulling available, high-quality reviewers from another underutilized client workspace — turning idle capacity into usable capacity across the portfolio.
 
 ### Adaptive File Chunking
 
@@ -366,7 +366,15 @@ The system learns soft patterns over time — which contributors collaborate wel
 
 ### Executive Intelligence Dashboard
 
-A business-facing summary instead of raw charts: hours of manual coordination removed, average delivery improvement %, rework reduction %, and estimated monthly cost savings — built to speak directly to decision-makers, not just project managers.
+A business-facing summary instead of raw charts: hours of manual coordination removed, average delivery improvement %, rework reduction %, and estimated monthly time savings — built to speak directly to decision-makers, not just project managers.
+
+### Second-Brain GitHub Agent
+
+Points at any repository (yours or public) and autonomously builds and maintains living documentation. It is designed to keep technical documentation dynamically updated as the codebase changes:
+* **Perceive**: Monitors repository activity via webhooks, reading commit diffs, tree structures, and pull request metadata.
+* **Reason**: Infers architectural decisions, API contract modifications, and structural shifts. It checks existing documentation (like READMEs or project wikis) to flag when they drift out of sync with code changes.
+* **Act**: Autonomously drafts targeted documentation updates and proposes them as pull requests.
+* **Learn**: Tracks which of its past documentation suggestions were accepted or rejected by the team, calibrating its future suggestions and architectural assumptions accordingly.
 
 ### Explainable AI
 
@@ -382,7 +390,7 @@ The system observes repeated manual actions (e.g., a manager re-validating every
 
 ---
 
-## In-Platform Code Sandbox & Test Runner (Premium, Exclusive)
+## In-Platform Code Sandbox & Test Runner
 
 ### The Problem It Solves
 
@@ -396,14 +404,6 @@ In most team-based projects (especially academic/college teams), work splits une
 4. **Compatibility Check** – Beyond pass/fail, the sandbox checks the submitted code against other already-merged code in the same project (shared interfaces, function signatures, dependency versions) to flag integration conflicts before merge — not just "does it run," but "does it work with what the rest of the team already built."
 5. **AI-Assisted Optimization** – Claude reviews the passing code for performance, readability, and security issues, and suggests concrete optimizations inline (this reuses the existing AI Layer, routed to Claude for code reasoning).
 6. **Result Logging** – Test run history, pass rates, and optimization suggestions are attached to the task permanently, giving Managers an objective artifact instead of just a checkbox marked "done."
-
-### Access Model
-
-| Tier | Access |
-|------|--------|
-| Free Trial | Full sandbox + test runner access for 7 days per workspace |
-| Paid (Pro/Team tier) | Unlimited sandbox sessions, persistent test history, compatibility checks across the full codebase |
-| Free Plan (post-trial) | Feature locks; tasks revert to manual completion marking only |
 
 ### Supporting Tech
 
@@ -420,31 +420,7 @@ In most team-based projects (especially academic/college teams), work splits une
 
 ---
 
-## Subscription Tiers
 
-| Feature | Free | Pro | Enterprise (Agency) |
-|---|---|---|---|
-| Core task/project management, Kanban/List/Calendar | ✅ | ✅ | ✅ |
-| Skill-Based Auto Task Assignment (one-time, on-upload) | ✅ (limited team size) | ✅ | ✅ |
-| Continuous Reallocation & Predictive Completion Engine | ❌ | ✅ | ✅ |
-| AI Bottleneck Detection & Explainable AI rationale | ❌ | ✅ | ✅ |
-| Dynamic Skill Graph & Learning Assignment Model | ❌ | ✅ | ✅ |
-| Quality Prediction & Digital Twin Simulation | ❌ | Limited | ✅ |
-| Multi-Agent AI Workforce (Google ADK agents) | ❌ | Core agents only | Full agent suite |
-| Natural Language Operations | ❌ | ✅ | ✅ |
-| Auto SOP Generation | ❌ | ✅ | ✅ |
-| Executive Intelligence Dashboard | ❌ | ❌ | ✅ |
-| Internal Talent Marketplace & Cross-Workspace Optimization | ❌ | ❌ | ✅ |
-| Autonomous Workflow Evolution | ❌ | ❌ | ✅ |
-| Agency Portfolio Mode (System Admin role) | ❌ | ❌ | ✅ |
-| In-Platform Code Sandbox & Test Runner | 7-day free trial | ✅ | ✅ |
-
-* **Free** – core orchestration on first assignment only, no continuous AI layer.
-* **Pro** – unlocks the continuous orchestration engine and code sandbox for a single workspace/team.
-* **Enterprise (Agency)** – adds everything needed to run Cadence as a managed service across multiple client workspaces, including the System Admin role and cross-client optimization.
-* All premium/exclusive features above are billed and enforced via Stripe subscription tiers, with usage gating handled at the API layer (not just hidden in the UI).
-
----
 
 ## Security
 
@@ -486,7 +462,6 @@ REDIS_URL=redis://localhost:6379
 JWT_SECRET=your_jwt_secret
 JWT_REFRESH_SECRET=your_refresh_secret
 CLERK_SECRET_KEY=your_clerk_secret
-STRIPE_SECRET_KEY=your_stripe_secret
 ANTHROPIC_API_KEY=your_anthropic_api_key
 GROQ_API_KEY=your_groq_api_key
 GEMINI_API_KEY=your_gemini_api_key
