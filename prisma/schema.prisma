@@ -1,0 +1,289 @@
+// ==========================================
+// FILE: prisma/schema.prisma
+// PRIMARY DEVELOPER: Vijesh (Database & Storage Engineer)
+// CO-DEVELOPERS / COLLABORATORS: Godfrey (tRPC/Zod), Santosh (Middleware & Security)
+// FOCUS: Database Schema Architecture, Row-Level Isolation, AI Embeddings
+//
+// CRITERIA & OPERATIONAL REQUIREMENTS:
+// 1. Maintain workspace-level isolation for multi-tenancy.
+// 2. Define clear indices on tenant foreign keys (e.g., workspaceId, userId) to optimize queries.
+// 3. Support skill profiles and XP progression tables to drive the Skill-Based Auto-Assignment Engine.
+// 4. Record code validation sandbox outputs and compatibility test logs permanently.
+// 5. Connect docs with repo commits for the Second-Brain GitHub synchronization documentation agent.
+// ==========================================
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum WorkspaceRole {
+  OWNER
+  ADMIN
+  MANAGER
+  MEMBER
+  CONTRIBUTOR
+  CLIENT
+  VIEWER
+  GUEST
+}
+
+enum TaskStatus {
+  TODO
+  IN_PROGRESS
+  IN_SANDBOX
+  TESTS_FAILED
+  TESTS_PASSED
+  IN_REVIEW
+  COMPLETED
+  BLOCKED
+}
+
+enum TaskCategory {
+  DATA_CLEANUP
+  QA_REVIEW
+  CONTENT_TAGGING
+  CLAIMS_PROCESSING
+  OCR_REVIEW
+  DEVELOPMENT
+}
+
+model User {
+  id               String            @id @default(uuid())
+  email            String            @unique
+  name             String?
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+  
+  // Relations
+  workspaceMembers WorkspaceMember[]
+  submissions      CodeSubmission[]
+  skillProfiles    SkillProfile[]
+  comments         Comment[]
+  activityLogs     ActivityLog[]
+}
+
+model Workspace {
+  id         String   @id @default(uuid())
+  name       String
+  slug       String   @unique
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  // Relations
+  members            WorkspaceMember[]
+  projects           Project[]
+  tasks              Task[]
+  repositoryLinks    RepositoryConnection[]
+  activityLogs       ActivityLog[]
+}
+
+model WorkspaceMember {
+  id          String        @id @default(uuid())
+  workspaceId String
+  userId      String
+  role        WorkspaceRole @default(MEMBER)
+  joinedAt    DateTime      @default(now())
+
+  // Leveling System
+  xp                 Int        @default(0)
+  level              Int        @default(1)
+  collaborationScore Float      @default(100.0)
+
+  // Relations
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([workspaceId, userId])
+  @@index([workspaceId])
+  @@index([userId])
+}
+
+model Project {
+  id          String   @id @default(uuid())
+  workspaceId String
+  name        String
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  tasks     Task[]
+
+  @@index([workspaceId])
+}
+
+model Task {
+  id          String       @id @default(uuid())
+  projectId   String
+  workspaceId String
+  title       String
+  description String?
+  status      TaskStatus   @default(TODO)
+  category    TaskCategory
+  assignedTo  String?      // Links to WorkspaceMember id
+  points      Int          @default(10)
+  dueDate     DateTime?
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  // Relations
+  project          Project           @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  workspace        Workspace         @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  submissions      CodeSubmission[]
+  fileWorkUnits    FileWorkUnit[]
+  comments         Comment[]
+}
+
+model SkillProfile {
+  id          String       @id @default(uuid())
+  userId      String
+  category    TaskCategory
+  score       Int          @default(50) // 1-100 skill score
+  updatedAt   DateTime     @updatedAt
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, category])
+}
+
+model FileWorkUnit {
+  id          String   @id @default(uuid())
+  taskId      String
+  rowNumber   Int
+  rawData     Json
+  processed   Boolean  @default(false)
+  completedAt DateTime?
+
+  // Relations
+  task Task @relation(fields: [taskId], references: [id], onDelete: Cascade)
+
+  @@index([taskId])
+}
+
+model CodeSubmission {
+  id           String   @id @default(uuid())
+  taskId       String
+  userId       String
+  repoUrl      String?
+  codeSnippet  String?
+  language     String
+  submittedAt  DateTime @default(now())
+
+  // Relations
+  task        Task             @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  user        User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  testRuns    TestRun[]
+  compatChecks CompatibilityCheck[]
+
+  @@index([taskId])
+  @@index([userId])
+}
+
+model TestRun {
+  id           String   @id @default(uuid())
+  submissionId String
+  passed       Boolean
+  outputLogs   String
+  durationMs   Int
+  runAt        DateTime @default(now())
+
+  // Relations
+  submission CodeSubmission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+
+  @@index([submissionId])
+}
+
+model CompatibilityCheck {
+  id               String   @id @default(uuid())
+  submissionId     String
+  conflictingSubId String?
+  conflictType     String?
+  resolved         Boolean  @default(false)
+  checkedAt        DateTime @default(now())
+
+  // Relations
+  submission CodeSubmission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+
+  @@index([submissionId])
+}
+
+model RepositoryConnection {
+  id          String   @id @default(uuid())
+  workspaceId String
+  repoUrl     String   @unique
+  connectedAt DateTime @default(now())
+
+  // Relations
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  suggestions DocSyncSuggestion[]
+  syncMetrics DocSyncMetric[]
+
+  @@index([workspaceId])
+}
+
+model DocSyncSuggestion {
+  id           String   @id @default(uuid())
+  repoConnId   String
+  filePath     String
+  proposedDiff String
+  commitSha    String
+  status       String   @default("DRAFT") // DRAFT, SUBMITTED, ACCEPTED, REJECTED
+  feedback     String?
+  createdAt    DateTime @default(now())
+
+  // Relations
+  repoConnection RepositoryConnection @relation(fields: [repoConnId], references: [id], onDelete: Cascade)
+
+  @@index([repoConnId])
+}
+
+model Comment {
+  id        String   @id @default(uuid())
+  taskId    String
+  authorId  String
+  content   String
+  createdAt DateTime @default(now())
+
+  // Relations
+  task   Task @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  author User @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  @@index([taskId])
+  @@index([authorId])
+}
+
+model ActivityLog {
+  id          String   @id @default(uuid())
+  workspaceId String
+  userId      String
+  action      String
+  details     String?
+  createdAt   DateTime @default(now())
+
+  // Relations
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([workspaceId])
+  @@index([userId])
+}
+
+model DocSyncMetric {
+  id           String   @id @default(uuid())
+  repoConnId   String
+  driftPercent Float
+  accuracyScore Float
+  timestamp    DateTime @default(now())
+
+  // Relations
+  repoConnection RepositoryConnection @relation(fields: [repoConnId], references: [id], onDelete: Cascade)
+
+  @@index([repoConnId])
+}
